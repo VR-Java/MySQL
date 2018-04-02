@@ -1,0 +1,81 @@
+drop database if exists logos_online_course;
+create database logos1_online_course;
+use logos1_online_course;
+
+create table teacher(
+	id int primary key auto_increment,
+	first_name varchar(30), #256 symbols max, but for mySQL version before 6.0
+    age int
+);
+
+create table course(
+	id int primary key auto_increment,
+    title varchar(100),
+    description text,
+    price decimal(5,2), #max value = 999.99 
+    teacher_id int
+);
+
+create table student(
+	id int primary key auto_increment,
+    full_name varchar(50),
+    age int
+);
+
+create table student_course(
+	student_id int,
+    course_id int
+);
+
+alter table course add foreign key(teacher_id) references teacher (id);
+alter table student_course add foreign key(student_id) references student(id);
+alter table student_course add foreign key(course_id) references course(id);
+
+insert into teacher(first_name, age) values('John', 35);
+insert into teacher(first_name, age) values('Peter', 30);
+insert into teacher(first_name, age) values('Igor', 32);
+
+insert into course(title, description, price, teacher_id) 
+values
+('Java', 'course JavaCore', 500.25, 1),
+('JavaAdvanced', 'course JavaAdv', 950.50, 2),
+('MysQl', 'DB course', 200.00, 3),
+('Spring', 'course course JavaAdv', 500.25, 2),
+('Spring boot', 'course JavaAdv', 300.50, 2),
+('Hibernate', 'course JavaAdv+DB', 100.00, 3)
+;
+
+insert into student (full_name, age)
+values
+('Oleg', 25),
+('Taras', 28),
+('Anton', 20)
+;
+
+insert into student_course (student_id, course_id)
+values (1, 5), (1, 2), (2, 2), (2, 6), (3, 4), (3,5);
+
+
+
+//-----------------------------------------------------------------------
+
+
+
+#select * from course;
+
+#select * from course where id >= 4;
+#select * from course where title='Spring';
+
+#select * from course join teacher on course.teacher_id = teacher.id;
+#select * from course c join teacher t on c.teacher_id = t.id;  # +alias
+
+/*
+select c.title, c.price, t.first_name, t.age 
+from course c join teacher t on c.teacher_id = t.id;
+*/
+
+select * from student_course sc 
+join student s on s.id = sc.student_id
+join course c on c.id = sc.course_id
+join teacher t on t.id = c.teacher_id
+;
