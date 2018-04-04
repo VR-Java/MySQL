@@ -1,0 +1,161 @@
+package cw;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Main {
+	
+	static Connection conn; 
+	
+	public static void main(String[] args) throws SQLException {
+	
+		String url ="jdbc:mysql://localhost:3306/university";
+		String username ="root";
+		String password ="123456";
+		
+		conn = DriverManager.getConnection(url, username, password);
+		
+		System.out.println("connected "+ !conn.isClosed());
+		
+		dropTable("student");
+		dropTable("university");
+		
+		createTableUniversity();
+		createTableStudent();
+		
+		for (int i=0; i<50; i++) {
+			addStudent(i);
+		}
+
+//		selectStudent();
+		
+//		selectStudentById(10);
+//		deleteStudentById(10);
+//		
+//		updateStudentById(5, "Jackie Chan");
+		
+		conn.close();
+		
+		
+	}
+	
+	public static void dropTable(String tableName) throws SQLException {
+		String query = "drop table if exists " + tableName +  ";";
+		
+		Statement stmt = conn.createStatement();
+		stmt.execute(query);
+		stmt.close();
+	}
+	
+	
+	public static void createTableUniversity() throws SQLException {
+//		String queryDrop = "drop table if exists university;";
+		
+		String query = "create table university("
+				+ "id int primary key auto_increment, "
+				+ "name varchar(100));";
+		
+		Statement stmt = conn.createStatement();
+//		stmt.execute(queryDrop);
+		stmt.execute(query);
+		stmt.close();
+	}
+	
+	
+	public static void createTableStudent() throws SQLException {
+		//String alterTable = "alter table student add foriegn key(universityId) references student(id)";
+		String query = "create table student("
+				+ "id int primary key auto_increment, "
+				+ "full_name varchar(100), "
+				+ "age int, "
+				+ "universityId int, "
+				+ "foreign key(universityId) references student(id));";
+		
+//		System.out.println(query);
+		
+		Statement stmt = conn.createStatement();
+		stmt.execute(query);
+		stmt.close();
+	}
+
+	
+	
+	public static void addStudent(int i) throws SQLException {
+		String query = "insert into student(full_name, age) values(?, ?);";
+		
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		pstmt.setString(1, "Van Dam" + i);
+		pstmt.setInt(2, 20+i);
+		
+		pstmt.executeUpdate();
+		pstmt.close();
+	}
+	
+	public static void selectStudent() throws SQLException {
+		String query = "select * from student;";
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		List<String> students = new ArrayList<>();
+		
+		while (rs.next()) {
+			students.add(
+					"Id: " + rs.getInt("id") + "\t|"
+					+ "full_name: " + rs.getString("full_name")  + "\t|"
+					+ "age: " + rs.getInt("age"));			
+		}
+		
+		students.forEach(System.out::println);
+	}
+	
+	
+	public static void selectStudentById(int id) throws SQLException {
+		String query = "select * from student where id=?;";
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		pstmt.setInt(1, id);
+		
+		ResultSet rs = pstmt.executeQuery();
+		
+		List<String> students = new ArrayList<>();
+		
+		while (rs.next()) {
+			students.add(
+					"Id: " + rs.getInt("id") + "\t|"
+					+ "full_name: " + rs.getString("full_name")  + "\t|"
+					+ "age: " + rs.getInt("age"));			
+		}
+		
+		students.forEach(System.out::println);
+	}
+
+	public static void deleteStudentById(int id) throws SQLException {
+		String query = "delete from student where id=?;";
+		
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		pstmt.setInt(1, id);
+		
+		pstmt.executeUpdate();
+		pstmt.close();
+	}
+	
+	public static void updateStudentById(int id, String name) throws SQLException {
+		String query = "update student "
+				+ "set full_name=?"
+				+ "where id=?";
+		PreparedStatement pstmt = conn.prepareStatement(query);
+		pstmt.setString(1, name);
+		pstmt.setInt(2, id);
+		
+		pstmt.executeUpdate();
+		pstmt.close();
+		
+	}
+	
+}
